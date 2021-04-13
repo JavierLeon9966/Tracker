@@ -25,7 +25,7 @@ class UntrackCommand extends Command implements PluginIdentifiableCommand{
 			return true;
 		}
 		if(count($args) == 0){
-			throw InvalidCommandSyntaxException;
+			throw new InvalidCommandSyntaxException;
 		}elseif(!$sender instanceof Player){
 			$sender->sendMessage('This command must be executed as a player');
 			return false;

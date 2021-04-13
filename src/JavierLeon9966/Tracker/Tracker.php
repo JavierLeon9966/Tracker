@@ -21,7 +21,7 @@ final class Tracker extends PluginBase implements Listener{
 			new TrackCommand($this),
 			new UntrackCommand($this)
 		]);
-		$this->getPluginManager()->registerEvents($this, $this);
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
 	public function updateCompass(Player $tracker): ?Player{
 		$username = $tracker->getName();
@@ -59,7 +59,7 @@ final class Tracker extends PluginBase implements Listener{
 			$pk->x2 = $pk->x;
 			$pk->y2 = $pk->y;
 			$pk->z2 = $pk->z;
-			$pk->dimensionId = DimensionIds::OVERWORLD;
+			$pk->dimension = DimensionIds::OVERWORLD;
 		}else $pk->spawnForced = false;
 		$tracker->dataPacket($pk);
 
