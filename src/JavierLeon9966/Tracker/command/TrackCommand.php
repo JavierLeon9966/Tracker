@@ -35,15 +35,15 @@ class TrackCommand extends Command implements PluginOwned{
 		}elseif($player === $sender){
 			$sender->sendMessage('You can not track yourself');
 			return true;
-		}elseif($this->getPlugin()->isTracking($sender->getName(), $player)){
+		}elseif($this->getOwningPlugin()->isTracking($sender->getName(), $player)){
 			$sender->sendMessage("You are already tracking {$player->getName()}");
 			return true;
 		}
-		$this->getPlugin()->addTracker($sender->getName(), $player);
+		$this->getOwningPlugin()->addTracker($sender->getName(), $player);
 		foreach($sender->getInventory()->addItem(VanillaItems::COMPASS()) as $drop){
 			$sender->dropItem($drop);
 		}
-		$this->getPlugin()->updateCompass($sender);
+		$this->getOwningPlugin()->updateCompass($sender);
 		$sender->sendMessage(TextFormat::GREEN."Compass now will point to {$player->getName()}.");
 		return true;
 	}

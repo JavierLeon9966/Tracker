@@ -34,12 +34,12 @@ class UntrackCommand extends Command implements PluginOwned{
 		}elseif($player === $sender){
 			$sender->sendMessage('You can not untrack yourself');
 			return true;
-		}elseif(!$this->getPlugin()->isTracking($sender->getName(), $player)){
+		}elseif(!$this->getOwningPlugin()->isTracking($sender->getName(), $player)){
 			$sender->sendMessage("You are already not tracking {$player->getName()}");
 			return true;
 		}
-		$this->getPlugin()->removeTracker($sender->getName(), $player);
-		$this->getPlugin()->updateCompass($sender);
+		$this->getOwningPlugin()->removeTracker($sender->getName(), $player);
+		$this->getOwningPlugin()->updateCompass($sender);
 		$sender->sendMessage(TextFormat::GREEN."Compass is no longer pointing to {$player->getName()}.");
 		return true;
 	}
