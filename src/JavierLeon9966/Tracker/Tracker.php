@@ -2,16 +2,16 @@
 namespace JavierLeon9966\Tracker;
 use pocketmine\event\Listener;
 use pocketmine\event\player\{PlayerInteractEvent, PlayerRespawnEvent, PlayerQuitEvent};
-use pocketmine\item\Item;
+use pocketmine\item\{ItemIds, VanillaItems};
 use pocketmine\network\mcpe\protocol\{ProtocolInfo, SetSpawnPositionPacket};
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat;
 use JavierLeon9966\Tracker\command\{TrackCommand, UntrackCommand};
 final class Tracker extends PluginBase implements Listener{
-	private $trackers = [];
-	private static $instance = null;
+	private array $trackers = [];
+	private static ?self $instance = null;
 	public static function getInstance(): ?self{
 		return self::$instance;
 	}
@@ -39,7 +39,7 @@ final class Tracker extends PluginBase implements Listener{
 				unset($this->trackers[$username][$player->getName()]);
 				continue;
 			}
-			$distanceSq = $player->distanceSquared($tracker);
+			$distanceSq = $player->getPosition()->distanceSquared($tracker->getPosition());
 			if($distanceSq < $currentDistanceSq){
 				$currentDistanceSq = $distanceSq;
 				$nearestPlayer = $player;
@@ -48,20 +48,9 @@ final class Tracker extends PluginBase implements Listener{
 		if($nearestPlayer === null){
 			return null;
 		}
-		$pos = $nearestPlayer->floor();
+		$pos = $nearestPlayer->getPosition()->tfloor();
 
-		$pk = new SetSpawnPositionPacket;
-		$pk->x = $pos->x;
-		$pk->y = $pos->y;
-		$pk->z = $pos->z;
-		$pk->spawnType = SetSpawnPositionPacket::TYPE_WORLD_SPAWN;
-		if(ProtocolInfo::CURRENT_PROTOCOL >= 407){
-			$pk->x2 = $pk->x;
-			$pk->y2 = $pk->y;
-			$pk->z2 = $pk->z;
-			$pk->dimension = DimensionIds::OVERWORLD;
-		}else $pk->spawnForced = false;
-		$tracker->dataPacket($pk);
+		$tracker->dataPacket(SetSpawnPositionPacket::worldSpawn($pos->x, $pos->y, $pos->z, DimensionIds::OVERWORLD));
 
 		return $nearestPlayer;
 	}
@@ -83,7 +72,7 @@ final class Tracker extends PluginBase implements Listener{
 		$tracker = $event->getPlayer();
 		$username = $tracker->getName();
 		$action = $event->getAction();
-		if(isset($this->trackers[$tracker->getName()]) and $event->getItem()->getId() == Item::COMPASS and ($action == PlayerInteractEvent::RIGHT_CLICK_AIR or $action == PlayerInteractEvent::RIGHT_CLICK_BLOCK)){
+		if(isset($this->trackers[$tracker->getName()]) and $event->getItem()->getId() == ItemIds::COMPASS and ($action == PlayerInteractEvent::RIGHT_CLICK_AIR or $action == PlayerInteractEvent::RIGHT_CLICK_BLOCK)){
 			$nearestPlayer = $this->updateCompass($tracker);
 			if($nearestPlayer === null){
 				return;
@@ -98,7 +87,7 @@ final class Tracker extends PluginBase implements Listener{
 	public function onPlayerRespawn(PlayerRespawnEvent $event): void{
 		$player = $event->getPlayer();
 		if(isset($this->trackers[$player->getName()])){
-			foreach($player->getInventory()->addItem(Item::get(Item::COMPASS)) as $drop){
+			foreach($player->getInventory()->addItem(VanillaItems::COMPASS()) as $drop){
 				$player->dropItem($drop);
 			}
 		}

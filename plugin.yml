@@ -1,8 +1,8 @@
 name: Tracker
 main: JavierLeon9966\Tracker\Tracker
 version: 1.0.0
-api: [3.0.0-ALPHA7, 3.0.0-ALPHA8, 3.0.0-ALPHA9, 3.0.0-ALPHA10, 3.0.0-ALPHA11, 3.0.0-ALPHA12, 3.0.0]
-mcpe-protocol: [137, 150, 160, 201, 223, 261, 274, 282, 291, 313, 332, 340, 354, 361, 388, 389, 390, 407, 408, 419, 422, 428, 431]
+api: 4.0.0
+mcpe-protocol: [390, 407, 408, 419, 422, 428, 431]
 author: Javier Leon9966
 description: A PocketMine-MP plugin to track a player's location
 website: https://github.com/JavierLeon9966/Tracker

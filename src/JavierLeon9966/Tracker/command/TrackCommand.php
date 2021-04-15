@@ -1,14 +1,14 @@
 <?php
 namespace JavierLeon9966\Tracker\command;
-use pocketmine\command\{Command, CommandSender, PluginIdentifiableCommand};
+use pocketmine\command\{Command, CommandSender};
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\item\Item;
-use pocketmine\Player;
-use pocketmine\plugin\Plugin;
+use pocketmine\item\VanillaItems;
+use pocketmine\player\Player;
+use pocketmine\plugin\{PluginOwned, PluginOwnedTrait};
 use pocketmine\utils\TextFormat;
 use JavierLeon9966\Tracker\Tracker;
-class TrackCommand extends Command implements PluginIdentifiableCommand{
-	private $plugin;
+class TrackCommand extends Command implements PluginOwned{
+	use PluginOwnedTrait;
 	public function __construct(Tracker $plugin){
 		$this->plugin = $plugin;
 		parent::__construct(
@@ -17,9 +17,6 @@ class TrackCommand extends Command implements PluginIdentifiableCommand{
 			'/track <name: player>'
 		);
 		$this->setPermission('tracker.command.track');
-	}
-	public function getPlugin(): Plugin{
-		return $this->plugin;
 	}
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
@@ -43,7 +40,7 @@ class TrackCommand extends Command implements PluginIdentifiableCommand{
 			return true;
 		}
 		$this->getPlugin()->addTracker($sender->getName(), $player);
-		foreach($sender->getInventory()->addItem(Item::get(Item::COMPASS)) as $drop){
+		foreach($sender->getInventory()->addItem(VanillaItems::COMPASS()) as $drop){
 			$sender->dropItem($drop);
 		}
 		$this->getPlugin()->updateCompass($sender);

@@ -1,13 +1,13 @@
 <?php
 namespace JavierLeon9966\Tracker\command;
-use pocketmine\command\{Command, CommandSender, PluginIdentifiableCommand};
+use pocketmine\command\{Command, CommandSender};
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\Player;
-use pocketmine\plugin\Plugin;
+use pocketmine\player\Player;
+use pocketmine\plugin\{PluginOwned, PluginOwnedTrait};
 use pocketmine\utils\TextFormat;
 use JavierLeon9966\Tracker\Tracker;
-class UntrackCommand extends Command implements PluginIdentifiableCommand{
-	private $plugin;
+class UntrackCommand extends Command implements PluginOwned{
+	use PluginOwnedTrait;
 	public function __construct(Tracker $plugin){
 		$this->plugin = $plugin;
 		parent::__construct(
@@ -16,10 +16,7 @@ class UntrackCommand extends Command implements PluginIdentifiableCommand{
 			'/untrack <name: player>'
 		);
 		$this->setPermission('tracker.command.untrack');
-	}
-	public function getPlugin(): Plugin{
-		return $this->plugin;
-	}
+	} 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
