@@ -48,9 +48,9 @@ final class Tracker extends PluginBase implements Listener{
 		if($nearestPlayer === null){
 			return null;
 		}
-		$pos = $nearestPlayer->getPosition()->tfloor();
+		$pos = $nearestPlayer->getPosition()->floor();
 
-		$tracker->dataPacket(SetSpawnPositionPacket::worldSpawn($pos->x, $pos->y, $pos->z, DimensionIds::OVERWORLD));
+		$tracker->getNetworkSession()->sendDataPacket(SetSpawnPositionPacket::worldSpawn($pos->x, $pos->y, $pos->z, DimensionIds::OVERWORLD));
 
 		return $nearestPlayer;
 	}
