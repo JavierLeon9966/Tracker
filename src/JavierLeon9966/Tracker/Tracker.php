@@ -39,7 +39,7 @@ final class Tracker extends PluginBase implements Listener{
 		$server->getPluginManager()->registerEvents($this, $this);
 	}
 
-	public function onDisable(): void{
+	protected function onDisable(): void{
 		self::$instance = null;
 	}
 
