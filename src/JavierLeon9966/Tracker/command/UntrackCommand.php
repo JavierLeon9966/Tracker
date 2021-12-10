@@ -34,7 +34,7 @@ class UntrackCommand extends Command implements PluginOwned{
 			$sender->sendMessage('This command must be executed as a player');
 			return false;
 		}
-		$player = $sender->getServer()->getPlayer($args[0]);
+		$player = $sender->getServer()->getPlayerByPrefix($args[0]);
 		if($player === null){
 			$sender->sendTranslation(TextFormat::RED.'%commands.generic.player.notFound');
 			return true;

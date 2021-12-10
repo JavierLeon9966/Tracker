@@ -7,7 +7,7 @@ namespace JavierLeon9966\Tracker;
 use JavierLeon9966\Tracker\command\{TrackCommand, UntrackCommand};
 
 use pocketmine\event\Listener;
-use pocketmine\event\player\{PlayerRespawnEvent, PlayerQuitEvent, PlayerUseItemEvent};
+use pocketmine\event\player\{PlayerItemUseEvent, PlayerRespawnEvent, PlayerQuitEvent};
 use pocketmine\item\{ItemIds, VanillaItems};
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
@@ -91,7 +91,7 @@ final class Tracker extends PluginBase implements Listener{
 	/**
 	 * @priority MONITOR
 	 */
-	public function onPlayerUseItem(PlayerUseItemEvent $event): void{
+	public function onPlayerItemUse(PlayerItemUseEvent $event): void{
 		$tracker = $event->getPlayer();
 		$username = $tracker->getName();
 		if(!isset($this->trackers[$tracker->getName()]) and $event->getItem()->getId() === ItemIds::COMPASS){
