@@ -1,22 +1,29 @@
 <?php
+
+declare(strict_types = 1);
+
 namespace JavierLeon9966\Tracker\command;
+
+use JavierLeon9966\Tracker\Tracker;
+
 use pocketmine\command\{Command, CommandSender};
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
 use pocketmine\plugin\{PluginOwned, PluginOwnedTrait};
 use pocketmine\utils\TextFormat;
-use JavierLeon9966\Tracker\Tracker;
+
 class TrackCommand extends Command implements PluginOwned{
 	use PluginOwnedTrait;
+
 	public function __construct(Tracker $plugin){
-		$this->plugin = $plugin;
 		parent::__construct(
 			'track',
 			'Track a player\'s location',
 			'/track <name: player>'
 		);
 		$this->setPermission('tracker.command.track');
+		$this->owningPlugin = $plugin;
 	}
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
@@ -35,15 +42,18 @@ class TrackCommand extends Command implements PluginOwned{
 		}elseif($player === $sender){
 			$sender->sendMessage('You can not track yourself');
 			return true;
-		}elseif($this->getOwningPlugin()->isTracking($sender->getName(), $player)){
+		}
+		/** @var Tracker $plugin */
+		$plugin = $this->owningPlugin;
+		if($plugin->isTracking($sender->getName(), $player)){
 			$sender->sendMessage("You are already tracking {$player->getName()}");
 			return true;
 		}
-		$this->getOwningPlugin()->addTracker($sender->getName(), $player);
+		$plugin->addTracker($sender->getName(), $player);
 		foreach($sender->getInventory()->addItem(VanillaItems::COMPASS()) as $drop){
 			$sender->dropItem($drop);
 		}
-		$this->getOwningPlugin()->updateCompass($sender);
+		$plugin->updateCompass($sender);
 		$sender->sendMessage(TextFormat::GREEN."Compass now will point to {$player->getName()}.");
 		return true;
 	}
