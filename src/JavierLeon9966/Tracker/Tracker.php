@@ -1,59 +1,37 @@
 <?php
-
-declare(strict_types = 1);
-
 namespace JavierLeon9966\Tracker;
-
-use JavierLeon9966\Tracker\command\{TrackCommand, UntrackCommand};
-
 use pocketmine\event\Listener;
-use pocketmine\event\player\{PlayerItemUseEvent, PlayerRespawnEvent, PlayerQuitEvent};
-use pocketmine\item\{ItemIds, VanillaItems};
-use pocketmine\player\Player;
+use pocketmine\event\player\{PlayerInteractEvent, PlayerRespawnEvent, PlayerQuitEvent};
+use pocketmine\item\Item;
+use pocketmine\network\mcpe\protocol\{ProtocolInfo, SetSpawnPositionPacket};
+use pocketmine\network\mcpe\protocol\types\DimensionIds;
+use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
-use pocketmine\Server;
-use pocketmine\utils\{SingletonTrait, TextFormat};
-
+use pocketmine\utils\TextFormat;
+use JavierLeon9966\Tracker\command\{TrackCommand, UntrackCommand};
 final class Tracker extends PluginBase implements Listener{
-	use SingletonTrait;
-
-	/**
-	 * @var Player[][]
-	 * @phpstan-var array<string, array<string, Player>>
-	 */
-	private array $trackers = [];
-
-	private static function make(): self{
-		$plugin = Server::getInstance()->getPluginManager()->getPlugin('Tracker');
-		return $plugin instanceof self ? $plugin :
-			throw new \BadMethodCallException('Cannot get instance of a disabled plugin');
+	private $trackers = [];
+	private static $instance = null;
+	public static function getInstance(): ?self{
+		return self::$instance;
 	}
-
 	public function onEnable(): void{
 		self::$instance = $this;
-		$server = $this->getServer();
-		$server->getCommandMap()->registerAll('Tracker', [
+		$this->getServer()->getCommandMap()->registerAll('Tracker', [
 			new TrackCommand($this),
 			new UntrackCommand($this)
 		]);
-		$server->getPluginManager()->registerEvents($this, $this);
+		$this->getServer()->getPluginManager()->registerEvents($this, $this);
 	}
-
-	protected function onDisable(): void{
-		self::$instance = null;
-	}
-
 	public function updateCompass(Player $tracker): ?Player{
 		$username = $tracker->getName();
-		$trackerPos = $tracker->getPosition();
 		if(!isset($this->trackers[$username])){
 			return null;
-		}elseif(count($this->trackers[$username]) === 0){
+		}elseif(count($this->trackers[$username]) == 0){
 			unset($this->trackers[$username]);
-			$tracker->getNetworkSession()->syncWorldSpawnPoint($tracker->getWorld()->getSpawnLocation());
+			$tracker->setSpawn($tracker->getSpawn());
 			return null;
 		}
-
 		$currentDistanceSq = INF;
 		$nearestPlayer = null;
 		foreach($this->trackers[$username] as $player){
@@ -61,7 +39,7 @@ final class Tracker extends PluginBase implements Listener{
 				unset($this->trackers[$username][$player->getName()]);
 				continue;
 			}
-			$distanceSq = $player->getPosition()->distanceSquared($trackerPos);
+			$distanceSq = $player->distanceSquared($tracker);
 			if($distanceSq < $currentDistanceSq){
 				$currentDistanceSq = $distanceSq;
 				$nearestPlayer = $player;
@@ -70,35 +48,46 @@ final class Tracker extends PluginBase implements Listener{
 		if($nearestPlayer === null){
 			return null;
 		}
+		$pos = $nearestPlayer->floor();
 
-		$tracker->getNetworkSession()->syncWorldSpawnPoint($nearestPlayer->getPosition()); // not supported but is the only way
+		$pk = new SetSpawnPositionPacket;
+		$pk->x = $pos->x;
+		$pk->y = $pos->y;
+		$pk->z = $pos->z;
+		$pk->spawnType = SetSpawnPositionPacket::TYPE_WORLD_SPAWN;
+		if(ProtocolInfo::CURRENT_PROTOCOL >= 407){
+			$pk->x2 = $pk->x;
+			$pk->y2 = $pk->y;
+			$pk->z2 = $pk->z;
+			$pk->dimension = DimensionIds::OVERWORLD;
+		}else $pk->spawnForced = false;
+		$tracker->dataPacket($pk);
 
 		return $nearestPlayer;
 	}
-
 	public function addTracker(string $tracker, Player $player): void{
 		$this->trackers[$tracker][$player->getName()] = $player;
 	}
-
 	public function removeTracker(string $tracker, Player $player): void{
 		unset($this->trackers[$tracker][$player->getName()]);
 	}
-
 	public function isTracking(string $tracker, Player $player): bool{
 		return isset($this->trackers[$tracker][$player->getName()]);
 	}
 
 	/**
+	 * @ignoreCancelled true
 	 * @priority MONITOR
 	 */
-	public function onPlayerItemUse(PlayerItemUseEvent $event): void{
+	public function onPlayerInteract(PlayerInteractEvent $event): void{
 		$tracker = $event->getPlayer();
 		$username = $tracker->getName();
-		if(!isset($this->trackers[$tracker->getName()]) and $event->getItem()->getId() === ItemIds::COMPASS){
-			return;
-		}
-		$nearestPlayer = $this->updateCompass($tracker);
-		if($nearestPlayer !== null){
+		$action = $event->getAction();
+		if(isset($this->trackers[$tracker->getName()]) and $event->getItem()->getId() == Item::COMPASS and ($action == PlayerInteractEvent::RIGHT_CLICK_AIR or $action == PlayerInteractEvent::RIGHT_CLICK_BLOCK)){
+			$nearestPlayer = $this->updateCompass($tracker);
+			if($nearestPlayer === null){
+				return;
+			}
 			$tracker->sendMessage(TextFormat::GREEN."Compass is now pointing to {$nearestPlayer->getName()}.");
 		}
 	}
@@ -108,11 +97,10 @@ final class Tracker extends PluginBase implements Listener{
 	 */
 	public function onPlayerRespawn(PlayerRespawnEvent $event): void{
 		$player = $event->getPlayer();
-		if(!isset($this->trackers[$player->getName()])){
-			return;
-		}
-		foreach($player->getInventory()->addItem(VanillaItems::COMPASS()) as $drop){
-			$player->dropItem($drop);
+		if(isset($this->trackers[$player->getName()])){
+			foreach($player->getInventory()->addItem(Item::get(Item::COMPASS)) as $drop){
+				$player->dropItem($drop);
+			}
 		}
 	}
 
