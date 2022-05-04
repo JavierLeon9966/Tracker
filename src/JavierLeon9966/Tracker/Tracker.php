@@ -94,7 +94,7 @@ final class Tracker extends PluginBase implements Listener{
 	public function onPlayerItemUse(PlayerItemUseEvent $event): void{
 		$tracker = $event->getPlayer();
 		$username = $tracker->getName();
-		if(!isset($this->trackers[$tracker->getName()]) and $event->getItem()->getId() === ItemIds::COMPASS){
+		if(!isset($this->trackers[$tracker->getName()]) || $event->getItem()->getId() !== ItemIds::COMPASS){
 			return;
 		}
 		$nearestPlayer = $this->updateCompass($tracker);
