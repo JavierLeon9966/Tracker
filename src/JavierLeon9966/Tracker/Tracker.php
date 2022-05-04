@@ -46,6 +46,7 @@ final class Tracker extends PluginBase implements Listener{
 	public function updateCompass(Player $tracker): ?Player{
 		$username = $tracker->getName();
 		$trackerPos = $tracker->getPosition();
+		$trackerWorld = $trackerPos->getWorld();
 		if(!isset($this->trackers[$username])){
 			return null;
 		}elseif(count($this->trackers[$username]) === 0){
@@ -61,7 +62,11 @@ final class Tracker extends PluginBase implements Listener{
 				unset($this->trackers[$username][$player->getName()]);
 				continue;
 			}
-			$distanceSq = $player->getPosition()->distanceSquared($trackerPos);
+			$playerPos = $player->getPosition();
+			if($playerPos->getWorld() !== $trackerWorld){
+				continue;
+			}
+			$distanceSq = $playerPos->distanceSquared($trackerPos);
 			if($distanceSq < $currentDistanceSq){
 				$currentDistanceSq = $distanceSq;
 				$nearestPlayer = $player;
