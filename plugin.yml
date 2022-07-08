@@ -1,7 +1,7 @@
 name: Tracker
 main: JavierLeon9966\Tracker\Tracker
 version: 1.4.1
-api: 4.0.0
+api: 5.0.0
 author: Javier Leon9966
 description: A PocketMine-MP plugin to track a player's location
 website: https://github.com/JavierLeon9966/Tracker
