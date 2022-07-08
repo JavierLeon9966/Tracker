@@ -8,7 +8,7 @@ use JavierLeon9966\Tracker\command\{TrackCommand, UntrackCommand};
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\{PlayerItemUseEvent, PlayerRespawnEvent, PlayerQuitEvent};
-use pocketmine\item\{ItemIds, VanillaItems};
+use pocketmine\item\{ItemTypeIds, VanillaItems};
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
@@ -99,7 +99,7 @@ final class Tracker extends PluginBase implements Listener{
 	public function onPlayerItemUse(PlayerItemUseEvent $event): void{
 		$tracker = $event->getPlayer();
 		$username = $tracker->getName();
-		if(!isset($this->trackers[$tracker->getName()]) || $event->getItem()->getId() !== ItemIds::COMPASS){
+		if(!isset($this->trackers[$tracker->getName()]) || $event->getItem()->getTypeId() !== ItemTypeIds::COMPASS){
 			return;
 		}
 		$nearestPlayer = $this->updateCompass($tracker);
