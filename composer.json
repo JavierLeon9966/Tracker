@@ -2,7 +2,7 @@
   "name": "javierleon9966/tracker",
   "description": "A PocketMine-MP plugin to track a player's location",
   "type": "project",
-  "license": "GPL-3.0-only",
+  "license": "GPL-3.0-or-later",
   "require": {
     "pocketmine/pocketmine-mp": "^5.0.0"
   },
